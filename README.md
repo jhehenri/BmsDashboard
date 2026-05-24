@@ -70,7 +70,7 @@ python3 /opt/victronenergy/gui-v2/gui-v2-plugin-compiler.py \
     -n BmsDashboard \
     --min-required-version v1.2.13 \
     --settings BmsDashboard_PageSettings.qml
-mkdir -p gui-v2 && cp -f BmsDashboard.json gui-v2/
+mkdir -p gui-v2 && mv -f BmsDashboard.json gui-v2/
 
 # 3. Enable and restart the GUI
 ln -sf /data/apps/available/BmsDashboard /data/apps/enabled/BmsDashboard
