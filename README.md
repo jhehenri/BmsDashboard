@@ -19,6 +19,9 @@ It appears under **Settings → Integrations → UI Plugins → BmsDashboard**.
 It's a proper plugin built against Victron's official GUIv2 plugin framework
 (a `type:1` settings integration), not a GUI hack — so it survives firmware updates.
 
+The repo also includes **BmsOverview**, an experimental variant that auto-discovers
+all dbus-serialbattery batteries and adds an overview grid with drill-down (see below).
+
 ## Files
 
 ```
@@ -90,6 +93,38 @@ copy the new JSON into `gui-v2/`, and restart `start-gui`.
 | 🔴 Red | V ≥ 3.60 or V ≤ 3.00 | Critical |
 
 Adjust the thresholds in `cellColor()` in `BmsPanel.qml`.
+
+## BmsOverview (experimental): auto-discovery + drill-down
+
+`BmsDashboard` above uses a fixed list of batteries. `BmsOverview/` is an experimental
+variant that scales to any number of batteries and discovers them automatically.
+
+![BmsOverview auto-discovering two BMS](images/overview-dynamic.jpg)
+
+It shows a compact card per battery in a grid (SoC, voltage, min/max cell, status dot).
+Tapping a card opens the full panel as a detail page:
+
+![Drill-down to the full panel](images/overview-drilldown.jpg)
+
+**How discovery works (no hardcoded service UIDs):**
+
+1. Read the system battery list from `com.victronenergy.system/Batteries`.
+2. Build each service UID with `BackendConnection.serviceUidFromName(id, instance)`.
+3. Keep only services whose `/ProductId == 0xBA77` (the id Victron reserved for
+   dbus-serialbattery), which filters out the BMV and other battery monitors.
+
+The full per-battery panel (`BmsPanel.qml`) is reused as the drill-down detail page via
+`pageManager.pushPage`. Both auto-discovery and drill-down are confirmed working from a
+plugin on a Venus OS GX.
+
+**Status and limitations:**
+
+- Proof of concept. The grid fills the screen for typical counts (2, 4, 6, 8); very
+  large counts would want a scrollable layout, which is not added yet.
+- Battery names come straight from dbus-serialbattery's device names.
+
+Deploy is the same as BmsDashboard but with the `BmsOverview/` folder and `-n BmsOverview`.
+It has three QML files: the page, `BmsCard.qml`, and `BmsPanel.qml`.
 
 ## Notes
 
